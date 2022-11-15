@@ -1,17 +1,31 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../../Context/AuthProvider/AuthProvider';
 
 const Navbar = () => {
 
+    const { user, logout } = useContext(AuthContext);
 
+    const handleSignOut = () => {
+        logout()
+            .then(() => { })
+            .catch(err => console.log(err))
+    }
     // <></> ata dilei hoy abar ai tager modde React.Fragment likhe dilei hobe 
-
     const menuItems = <React.Fragment>
         <li><Link className='rounded-lg' to="/">Home</Link></li>
         <li><Link className='rounded-lg' to="/appoinment">Appoinment</Link></li>
         <li><Link className='rounded-lg' to="/abouts">Abouts</Link></li>
-        <li><Link className='rounded-lg' to="/reviews">Reviews</Link></li>
-        <li><Link className='rounded-lg' to="/login">Login</Link></li>
+
+        {
+            user?.uid ?
+                <>
+                    <li><Link className='rounded-lg' to="/dashboard">Dashboard</Link></li>
+                    <li><Link onClick={handleSignOut} className='rounded-lg' >SignOut</Link></li>
+                </>
+                :
+                <li><Link className='rounded-lg' to="/login">Login</Link></li>
+        }
     </React.Fragment>
 
     return (
