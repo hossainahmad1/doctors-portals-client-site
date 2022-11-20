@@ -1,28 +1,39 @@
 import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../Context/AuthProvider/AuthProvider';
+import useToken from '../../../useToken/useToken';
+
+
 
 const SignUp = () => {
-    const { register, formState: { errors }, handleSubmit } = useForm();
+    const { register, formState: { errors }, handleSubmit,reset } = useForm();
     const { createUser, updateUser } = useContext(AuthContext);
     const [signUpError, setSignUpError] = useState('');
+    const [createdUserEmail, setCreatedUserEmail] = useState('');
+    const [token] = useToken(createdUserEmail)
+    const navigate = useNavigate();
 
-    
+
+    if (token) {
+        navigate('/')
+    }
     const handleSignup = data => {
-        console.log(data)
         setSignUpError('')
         createUser(data.email, data.password)
             .then(result => {
                 const user = result.user;
                 console.log(user);
+                toast.success('successfully signup');
                 const userInfo = {
                     displayName: data.name
                 }
-                // console.log(userInfo)
                 updateUser(userInfo)
-                    .then(() => { })
+                    .then(() => {
+                        saveUser(data.name, data.email);
+                        reset()
+                    })
                     .catch(err => console.error(err))
             })
             .catch(err => {
@@ -30,9 +41,24 @@ const SignUp = () => {
                 setSignUpError(err.message)
             })
 
-        // toastfy
-        toast.success('successfully signup');
     }
+
+    const saveUser = (name, email) => {
+        const users = { name, email };
+        fetch('http://localhost:5000/users', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(users)
+        })
+            .then(res => res.json())
+            .then(data => {
+                setCreatedUserEmail(email)
+            })
+    }
+
+
 
     return (
         <div className='h-[600px] flex justify-center items-center'>
